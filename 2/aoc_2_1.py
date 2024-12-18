@@ -27,7 +27,10 @@ class Report:
         )
 
     def __str__(self):
-        return f"Report: {self.incr_str} - {self.decr_str} - {self.safe_str} - Levels:{self.levels_str} - Jumps:{self._jumps}"
+        return (
+            f"Report: {self.incr_str} - {self.decr_str} - {self.safe_str} - "
+            f"Levels:{self.levels_str} - Jumps:{self._jumps}"
+        )
 
     def _is_increasing(self):
         return self._levels == sorted(self._levels)
@@ -83,3 +86,7 @@ def main() -> None:
     for report in reports:
         print(report)
     print(f"{number_of_safe_reports=}")
+
+
+if __name__ == "__main__":
+    main()
