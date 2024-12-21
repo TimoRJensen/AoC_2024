@@ -1,24 +1,56 @@
-from collections import Counter
 from pathlib import Path
 
 
 class Report:
-    def __init__(self, levels: list[int], levels_print_length: int):
+    def __init__(self, levels: list[int], levels_print_length: int = 30):
         self._levels = levels
         self._levels_print_length = levels_print_length
-        self._jumps: list[int] = []
+        self._jumps: list[int] = self._get_jumps()
+        self._evaluated_jumps: list[bool] = self._get_evaluated_jumps()
         self.incr_str = str(self._is_increasing()).ljust(5)
         self.decr_str = str(self._is_decreasing()).ljust(5)
         self.safe_str = str(self._all_jumps_are_safe()).ljust(5)
         self.levels_str = str(self._levels).ljust(self._levels_print_length)
 
-    def is_safe(self) -> int:
+    def is_safe(self, do_recurse: bool = True) -> int:
         """Returns 1 if the report is safe, 0 otherwise."""
         if (
             self._is_increasing() or self._is_decreasing()
         ) and self._all_jumps_are_safe():
             return 1
+        elif do_recurse and self._any_mutated_report_is_safe():
+            return 1
         return 0
+
+    def _get_jumps(self) -> list[int]:
+        jumps = []
+        for i in range(len(self._levels) - 1):
+            jumps.append(self._levels[i + 1] - self._levels[i])
+        return jumps
+
+    def _get_evaluated_jumps(self) -> list[bool]:
+        return [self.is_safe_jump(jump) for jump in self._jumps]
+
+    def _is_increasing(self):
+        return self._levels == sorted(self._levels)
+
+    def _is_decreasing(self):
+        return self._levels == sorted(self._levels, reverse=True)
+
+    def _all_jumps_are_safe(self):
+        if all(self._evaluated_jumps):
+            return True
+        else:
+            return False
+
+    def _any_mutated_report_is_safe(self):
+        for i in range(len(self._levels)):
+            mutable_levels = self._levels.copy()
+            mutable_levels.pop(i)
+            sub_report = Report(levels=mutable_levels)
+            if sub_report.is_safe(do_recurse=False):
+                return True
+        return False
 
     def __repr__(self):
         return (
@@ -31,38 +63,6 @@ class Report:
             f"Report: {self.incr_str} - {self.decr_str} - {self.safe_str} - "
             f"Levels:{self.levels_str} - Jumps:{self._jumps}"
         )
-
-    def _is_increasing(self):
-        return self._levels == sorted(self._levels)
-
-    def _is_decreasing(self):
-        return self._levels == sorted(self._levels, reverse=True)
-
-    def _all_jumps_are_safe(self):
-
-        for i in range(len(self._levels) - 1):
-            self._jumps.append(self._levels[i + 1] - self._levels[i])
-
-        evaluated_jumps = [self.is_safe_jump(jump) for jump in self._jumps]
-
-        if all(evaluated_jumps):
-            return True
-        else:
-            cnt = Counter(evaluated_jumps)
-            if (cnt[False] > 2) or (cnt[False] == 1):
-                return False
-            elif cnt[False] == 2:
-                return self._check_if_non_safe_jumps_are_adjacent()
-            else:
-                raise RuntimeError("This should not happen!")
-
-    def _check_if_non_safe_jumps_are_adjacent(self):
-        for i in range(len(self._jumps) - 1):
-            if not self.is_safe_jump(self._jumps[i]) and not self.is_safe_jump(
-                self._jumps[i + 1]
-            ):
-                return True
-        return False
 
     @staticmethod
     def is_safe_jump(jump: int):
