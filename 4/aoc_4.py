@@ -27,24 +27,31 @@ class XmasFinder:
         self.horizontal_slots_per_row_reversed: dict[int, dict[int, Slot]] = {}
 
     def load_matrix(self):
-        for row, line in enumerate(self.data):
-            self.matrix[row] = {}
-            for column, char in enumerate(line):
-                self.matrix[row][column] = char
+        for row_no, line_data in enumerate(self.data):
+            self.matrix[row_no] = {}
+            for column, char in enumerate(line_data):
+                self.matrix[row_no][column] = char
         self.load_horizontal_slots()
 
     def load_horizontal_slots(self):
-        for row, line in self.matrix.items():
-            self.horizontal_slots_per_row[row] = {}
-            for column, char in line.items():
-                if column + 3 < len(line):
-                    self.horizontal_slots_per_row[row][column] = Slot(
+        for row_no, line_data in self.matrix.items():
+            self.horizontal_slots_per_row[row_no] = {}
+            for column, char in line_data.items():
+                if column + 3 < len(line_data):
+                    self.horizontal_slots_per_row[row_no][column] = Slot(
                         char,
-                        line[column + 1],
-                        line[column + 2],
-                        line[column + 3],
+                        line_data[column + 1],
+                        line_data[column + 2],
+                        line_data[column + 3],
                     )
 
-        for row, line in self.matrix.items():
-            self.horizontal_slots_per_row_reversed[row] = {}
-            items = sorted(line.items(), reverse=True)
+        for row_no, line_data in self.matrix.items():
+            self.horizontal_slots_per_row_reversed[row_no] = {}
+            for column, char in line_data.items():
+                if column - 3 >= 0:
+                    self.horizontal_slots_per_row_reversed[row_no][column] = Slot(
+                        char,
+                        line_data[column - 1],
+                        line_data[column - 2],
+                        line_data[column - 3],
+                    )

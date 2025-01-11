@@ -30,4 +30,4 @@ def test_finder_finds_an_xmas_in_reversed_row(data):
     finder = XmasFinder(data)
     finder.load_matrix()
     pprint(finder.horizontal_slots_per_row_reversed)
-    assert finder.horizontal_slots_per_row_reversed[1][5].is_xmas()
+    assert finder.horizontal_slots_per_row_reversed[1][4].is_xmas()
