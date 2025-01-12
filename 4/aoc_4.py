@@ -20,38 +20,61 @@ class Slot:
 
 
 class XmasFinder:
+    PATTERN_HORIZONTAL = ((0, 1), (0, 2), (0, 3))
+    PATTERN_HORIZONTAL_REVERSED = ((0, -1), (0, -2), (0, -3))
+    PATTERN_VERTICAL = ((1, 0), (2, 0), (3, 0))
+    PATTERN_VERTICAL_REVERSED = ((-1, 0), (-2, 0), (-3, 0))
+    PATTERN_DIAGONAL_DOWN = ((1, 1), (2, 2), (3, 3))
+    PATTERN_DIAGONAL_DOWN_REVERSED = ((-1, -1), (-2, -2), (-3, -3))
+    PATTERN_DIAGONAL_UP = ((-1, 1), (-2, 2), (-3, 3))
+    PATTERN_DIAGONAL_UP_REVERSED = ((1, -1), (2, -2), (3, -3))
+
+    PATTERNS = (
+        PATTERN_HORIZONTAL,
+        PATTERN_HORIZONTAL_REVERSED,
+        PATTERN_VERTICAL,
+        PATTERN_VERTICAL_REVERSED,
+        PATTERN_DIAGONAL_DOWN,
+        PATTERN_DIAGONAL_DOWN_REVERSED,
+        PATTERN_DIAGONAL_UP,
+        PATTERN_DIAGONAL_UP_REVERSED,
+    )
+
     def __init__(self, data):
         self.data = data
-        self.matrix: dict[int, dict[int, str]] = {}
-        self.horizontal_slots_per_row: dict[int, dict[int, Slot]] = {}
-        self.horizontal_slots_per_row_reversed: dict[int, dict[int, Slot]] = {}
+        self.chars: dict[tuple[int, int], str] = {}
 
     def load_matrix(self):
         for row_no, line_data in enumerate(self.data):
-            self.matrix[row_no] = {}
             for column, char in enumerate(line_data):
-                self.matrix[row_no][column] = char
-        self.load_horizontal_slots()
+                self.chars[(row_no, column)] = char
 
-    def load_horizontal_slots(self):
-        for row_no, line_data in self.matrix.items():
-            self.horizontal_slots_per_row[row_no] = {}
-            for column, char in line_data.items():
-                if column + 3 < len(line_data):
-                    self.horizontal_slots_per_row[row_no][column] = Slot(
-                        char,
-                        line_data[column + 1],
-                        line_data[column + 2],
-                        line_data[column + 3],
-                    )
+    def count_pattern_matches(self) -> int:
+        rv = 0
+        for pattern in self.PATTERNS:
+            for char in self.chars.items():
+                if char[1] != "X":
+                    continue
+                if self.check_pattern(char, pattern):
+                    rv += 1
+        return rv
 
-        for row_no, line_data in self.matrix.items():
-            self.horizontal_slots_per_row_reversed[row_no] = {}
-            for column, char in line_data.items():
-                if column - 3 >= 0:
-                    self.horizontal_slots_per_row_reversed[row_no][column] = Slot(
-                        char,
-                        line_data[column - 1],
-                        line_data[column - 2],
-                        line_data[column - 3],
-                    )
+    def check_pattern(self, char_x_y, pattern):
+        (row, column), char = char_x_y
+        y_1, x_1 = pattern[0]  # offset M
+        y_2, x_2 = pattern[1]  # offset A
+        y_3, x_3 = pattern[2]  # offset S
+        try:
+            result = all(
+                [
+                    self.chars[(row + y_1, column + x_1)] == "M",
+                    self.chars[(row + y_2, column + x_2)] == "A",
+                    self.chars[(row + y_3, column + x_3)] == "S",
+                ]
+            )
+            if result:
+                print(f"Pattern found at {row}, {column}")
+                print(f"{char_x_y=}, {pattern=}")
+                return True
+        except KeyError:
+            return False

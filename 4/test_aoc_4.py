@@ -20,14 +20,20 @@ def data():
     ]
 
 
-def test_finder_finds_an_xmas_in_row(data):
+def test_finder(data):
     finder = XmasFinder(data)
     finder.load_matrix()
-    assert finder.horizontal_slots_per_row[0][5].is_xmas()
+    # pprint(finder.chars)
+    assert finder.count_pattern_matches() == 18
 
 
-def test_finder_finds_an_xmas_in_reversed_row(data):
+def test_x_in_5_0(data):
     finder = XmasFinder(data)
     finder.load_matrix()
-    pprint(finder.horizontal_slots_per_row_reversed)
-    assert finder.horizontal_slots_per_row_reversed[1][4].is_xmas()
+    assert finder.chars[(5, 0)] == "X"
+
+
+def test_pattern_5_0(data):
+    finder = XmasFinder(data)
+    finder.load_matrix()
+    assert finder.check_pattern(((5, 0), "X"), XmasFinder.PATTERN_DIAGONAL_UP) == True
