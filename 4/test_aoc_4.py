@@ -36,4 +36,4 @@ def test_x_in_5_0(data):
 def test_pattern_5_0(data):
     finder = XmasFinder(data)
     finder.load_matrix()
-    assert finder.check_pattern(((5, 0), "X"), XmasFinder.PATTERN_DIAGONAL_UP) == True
+    assert finder.check_pattern(((5, 0), "X"), XmasFinder.PATTERN_DIAGONAL_UP) is True
