@@ -59,3 +59,20 @@ def test_update_returns_middle_number(rules, updates):
 def test_get_sum_of_all_valid_middle_nummbers(rules, updates):
     update_checker = UpdateChecker(rules)
     assert update_checker.get_sum_of_all_valid_middle_numbers(updates) == 143
+
+
+def test_get_middle_number_of_invalid_update(rules, updates):
+    update_checker = UpdateChecker(rules)
+    upd = updates[4]
+    reordered_update = update_checker.reorder_update(upd)
+    assert update_checker.get_middle_number(reordered_update) == 29
+
+
+def test_update_3_is_invalid(rules, updates):
+    update_checker = UpdateChecker(rules)
+    assert not update_checker.check_update(updates[3])
+
+
+def test_get_sum_of_all_invalid_updates(rules, updates):
+    update_checker = UpdateChecker(rules)
+    assert update_checker.get_sum_of_all_invalid_middle_numbers(updates) == 123
