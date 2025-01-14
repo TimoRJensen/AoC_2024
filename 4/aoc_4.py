@@ -95,7 +95,7 @@ class XmasFinder:
         rv = 0
         for pattern in self.CROSS_MAS_PATTERNS:
             for char in self.chars.items():
-                if char[1] != "X":
+                if char[1] != "A":
                     continue
                 if self.check_cross_pattern(char, pattern):
                     rv += 1
@@ -109,6 +109,7 @@ class XmasFinder:
                     return False
             except KeyError:
                 return False
+        print(f"Pattern found at {row}, {column}")
         return True
 
 
@@ -117,4 +118,5 @@ if __name__ == "__main__":
     input_data = file.read_text().splitlines()
     finder = XmasFinder(input_data)
     finder.load_matrix()
-    print(finder.count_pattern_matches())
+    print(finder.count_xmas_pattern_matches())
+    print(finder.count_cross_pattern_matches())

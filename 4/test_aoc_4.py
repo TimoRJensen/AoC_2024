@@ -39,3 +39,9 @@ def test_pattern_5_0(data):
     assert (
         finder.check_xmas_pattern(((5, 0), "X"), XmasFinder.PATTERN_DIAGONAL_UP) is True
     )
+
+
+def test_cross_mas_pattern(data):
+    finder = XmasFinder(data)
+    finder.load_matrix()
+    assert finder.count_cross_pattern_matches() == 9
