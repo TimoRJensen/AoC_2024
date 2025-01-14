@@ -29,7 +29,7 @@ class XmasFinder:
     PATTERN_DIAGONAL_UP = ((-1, 1), (-2, 2), (-3, 3))
     PATTERN_DIAGONAL_UP_REVERSED = ((1, -1), (2, -2), (3, -3))
 
-    PATTERNS = (
+    XMAS_PATTERNS = (
         PATTERN_HORIZONTAL,
         PATTERN_HORIZONTAL_REVERSED,
         PATTERN_VERTICAL,
@@ -40,6 +40,17 @@ class XmasFinder:
         PATTERN_DIAGONAL_UP_REVERSED,
     )
 
+    # All patterns describe top-left to bottom right and bottom left to top right and
+    # assume the anchor is A in the middle
+    # Again the coordinates represent (Y, X) and not (X, Y) - which I dislike and might
+    # need to change later
+    MAS_MAS = ((-1, -1, "M"), (1, 1, "S"), (1, -1, "M"), (-1, 1, "S"))
+    SAM_SAM = ((-1, -1, "S"), (1, 1, "M"), (1, -1, "S"), (-1, 1, "M"))
+    MAS_SAM = ((-1, -1, "M"), (1, 1, "S"), (1, -1, "S"), (-1, 1, "M"))
+    SAM_MAS = ((-1, -1, "S"), (1, 1, "M"), (1, -1, "M"), (-1, 1, "S"))
+
+    CROSS_MAS_PATTERNS = (MAS_MAS, SAM_SAM, MAS_SAM, SAM_MAS)
+
     def __init__(self, data):
         self.data = data
         self.chars: dict[tuple[int, int], str] = {}
@@ -49,17 +60,17 @@ class XmasFinder:
             for column, char in enumerate(line_data):
                 self.chars[(row_no, column)] = char
 
-    def count_pattern_matches(self) -> int:
+    def count_xmas_pattern_matches(self) -> int:
         rv = 0
-        for pattern in self.PATTERNS:
+        for pattern in self.XMAS_PATTERNS:
             for char in self.chars.items():
                 if char[1] != "X":
                     continue
-                if self.check_pattern(char, pattern):
+                if self.check_xmas_pattern(char, pattern):
                     rv += 1
         return rv
 
-    def check_pattern(self, char_x_y, pattern):
+    def check_xmas_pattern(self, char_x_y, pattern):
         (row, column), char = char_x_y
         y_1, x_1 = pattern[0]  # offset M
         y_2, x_2 = pattern[1]  # offset A
@@ -78,3 +89,23 @@ class XmasFinder:
                 return True
         except KeyError:
             return False
+
+    def count_cross_pattern_matches(self) -> int:
+        rv = 0
+        for pattern in self.CROSS_MAS_PATTERNS:
+            for char in self.chars.items():
+                if char[1] != "X":
+                    continue
+                if self.check_cross_pattern(char, pattern):
+                    rv += 1
+        return rv
+
+    def check_cross_pattern(self, char_x_y, pattern):
+        (row, column), char = char_x_y
+        for y, x, char in pattern:
+            try:
+                if self.chars[(row + y, column + x)] != char:
+                    return False
+            except KeyError:
+                return False
+        return True
