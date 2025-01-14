@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -78,3 +79,11 @@ class XmasFinder:
                 return True
         except KeyError:
             return False
+
+
+if __name__ == "__main__":
+    file = Path(__file__).resolve().parent / "input.txt"
+    input_data = file.read_text().splitlines()
+    finder = XmasFinder(input_data)
+    finder.load_matrix()
+    print(finder.count_pattern_matches())
