@@ -1,5 +1,4 @@
 from functools import lru_cache
-import itertools
 from pathlib import Path
 
 
@@ -14,19 +13,24 @@ class UpdateChecker:
         else:
             upd = update
         for rule in self.rules:
-            i_0 = None
-            i_1 = None
-            if (rule[0] not in upd) or (rule[1] not in upd):
-                continue
-            for i, n in enumerate(upd):
-                if n == rule[0]:
-                    i_0 = i
-                elif n == rule[1]:
-                    i_1 = i
-            if i_0 > i_1:
-                # print(f"Rule {rule} violated by {upd}")
-                # print(f"{i_0=}, {i_1=}")
+            if not self.rule_is_ok(rule, upd):
                 return False
+        return True
+
+    def rule_is_ok(self, rule: tuple[int, int], update: list[int]) -> bool:
+        i_0 = None
+        i_1 = None
+        if (rule[0] not in update) or (rule[1] not in update):
+            return True
+        for i, n in enumerate(update):
+            if n == rule[0]:
+                i_0 = i
+            elif n == rule[1]:
+                i_1 = i
+        if i_0 > i_1:
+            print(f"Rule {rule} violated by {update}")
+            print(f"{i_0=}, {i_1=}")
+            return False
         return True
 
     def _load_rules(self, raw_rules: list[str]) -> list[tuple[int, int]]:
@@ -68,11 +72,23 @@ class UpdateChecker:
 
     def reorder_update(self, update: str) -> list[int]:
         upd = self._parse_updates(update)
-        permutations = itertools.permutations(upd)  # this is waaay too slow!
-        for p in permutations:
-            print(f"Checking permutation {p}")
-            if self.check_update(p):
-                return p
+        while True:
+            sill_non_ok_rule = False
+            for rule in self.rules:
+                if not self.rule_is_ok(rule, upd):
+                    print(f"Reordering {upd} with {rule}")
+                    i_0 = None
+                    i_1 = None
+                    for i, n in enumerate(upd):
+                        if n == rule[0]:
+                            i_0 = i
+                        elif n == rule[1]:
+                            i_1 = i
+                    if i_0 > i_1:
+                        upd[i_0], upd[i_1] = upd[i_1], upd[i_0]
+                        sill_non_ok_rule = True
+            if rule == self.rules[-1] and not sill_non_ok_rule:
+                return upd
 
     def get_sum_of_all_invalid_middle_numbers(self, updates: list[str]) -> int:
         invalid_updates = [u for u in updates if not self.check_update(u)]
