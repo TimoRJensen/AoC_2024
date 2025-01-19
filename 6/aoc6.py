@@ -10,18 +10,18 @@ class GuardDirection(enum.Enum):
     RIGHT = ">"
 
 
-class Secenario:
+class Scenario:
     def __init__(self, data: list[str]):
         self.data = data
         self.map = self.build_map()
         self._guard_postion: tuple[int, int] = self._get_guard_position()
-        self._guard_direction: GuardDirection = self._get_guard_diriection()
+        self._guard_direction: GuardDirection = self._get_guard_direction()
         self.finished = False
 
     def _get_guard_position(self) -> tuple[int, int]:
         return self._find_guard_position()[0]
 
-    def _get_guard_diriection(self) -> GuardDirection:
+    def _get_guard_direction(self) -> GuardDirection:
         return self._find_guard_position()[1]
 
     @lru_cache
@@ -106,6 +106,6 @@ class Secenario:
 
 if __name__ == "__main__":
     data = Path("6/in.txt").read_text().splitlines()
-    sec = Secenario(data)
+    sec = Scenario(data)
     sec.walk()
     print(sec.walked_locations)
