@@ -74,6 +74,8 @@ class Scenario:
         if self.map.get(next_pos) == "#":
             self._guard_direction = self._turn_right()
             next_pos = self._get_guard_next_position()
+        else:
+            self._simulate_obstacle_to_find_loop()
 
         self.map[self._guard_postion] = "X"
         self._guard_postion = next_pos
@@ -89,7 +91,7 @@ class Scenario:
         elif self._guard_direction == GuardDirection.RIGHT:
             return GuardDirection.DOWN
 
-    def _get_guard_next_position(self):
+    def _get_guard_next_position(self) -> tuple[int, int]:
         if self._guard_direction == GuardDirection.UP:
             next_pos = (self._guard_postion[0], self._guard_postion[1] - 1)
         elif self._guard_direction == GuardDirection.DOWN:
@@ -102,6 +104,9 @@ class Scenario:
             self.finished = True
             return self._guard_postion
         return next_pos
+
+    def get_number_of_possible_loops(self) -> int:
+        pass
 
 
 if __name__ == "__main__":

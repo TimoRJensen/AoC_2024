@@ -33,3 +33,8 @@ def test_walking_one_step_truns_guard_pos_in_X(data):
     sec = Scenario(data)
     sec.walk(1)
     assert sec.map[(4, 6)] == "X"
+
+
+def test_count_possible_loop_spots(data):
+    sec = Scenario(data)
+    sec.get_number_of_possible_loops() == 6
