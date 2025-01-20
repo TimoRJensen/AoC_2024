@@ -17,6 +17,10 @@ class Scenario:
         self._guard_postion: tuple[int, int] = self._get_guard_position()
         self._guard_direction: GuardDirection = self._get_guard_direction()
         self.finished = False
+        self._loops_found: set[tuple[int, int]] = set()
+
+    def finish(self) -> None:
+        self.finished = True
 
     def _get_guard_position(self) -> tuple[int, int]:
         return self._find_guard_position()[0]
@@ -25,7 +29,7 @@ class Scenario:
         return self._find_guard_position()[1]
 
     @lru_cache
-    def _find_guard_position(self) -> tuple[int, int]:
+    def _find_guard_position(self) -> tuple[tuple[int, int], GuardDirection]:
         for y, row in enumerate(self.data):
             for x, cell in enumerate(row):
                 if cell in [
@@ -35,6 +39,9 @@ class Scenario:
                     GuardDirection.RIGHT.value,
                 ]:
                     return ((x, y), GuardDirection(cell))
+                else:
+                    continue
+        raise ValueError("No guard found in the data")
 
     @property
     def walked_locations(self) -> int:
@@ -69,11 +76,19 @@ class Scenario:
                 self._step()
 
     def _step(self) -> None:
-        next_pos = self._get_guard_next_position()
+        next_pos, finished = self._get_guard_next_position(
+            start=self._guard_postion, direction=self._guard_direction
+        )
+        if finished:
+            self.finish()
 
         if self.map.get(next_pos) == "#":
-            self._guard_direction = self._turn_right()
-            next_pos = self._get_guard_next_position()
+            self._guard_direction = self._turn_right(self._guard_direction)
+            next_pos, finished = self._get_guard_next_position(
+                start=self._guard_postion, direction=self._guard_direction
+            )
+            if finished:
+                self.finish()
         else:
             self._simulate_obstacle_to_find_loop()
 
@@ -81,32 +96,56 @@ class Scenario:
         self._guard_postion = next_pos
         print(f"Guards new position: {self._guard_postion}")
 
-    def _turn_right(self) -> GuardDirection:
-        if self._guard_direction == GuardDirection.UP:
-            return GuardDirection.RIGHT
-        elif self._guard_direction == GuardDirection.DOWN:
-            return GuardDirection.LEFT
-        elif self._guard_direction == GuardDirection.LEFT:
-            return GuardDirection.UP
-        elif self._guard_direction == GuardDirection.RIGHT:
-            return GuardDirection.DOWN
+    def _simulate_obstacle_to_find_loop(self) -> None:
+        current_pos = self._guard_postion
+        sim_direction = self._turn_right(self._guard_direction)
+        next_pos, finished = self._get_guard_next_position(
+            start=current_pos, direction=sim_direction
+        )
+        while True:
+            if finished:
+                break
+            next_pos, finished = self._get_guard_next_position(
+                start=next_pos, direction=sim_direction
+            )
+            if self.map.get(next_pos) == "#":
+                sim_direction = self._turn_right(sim_direction)
+            if next_pos == current_pos:
+                self._loop_found()
+                break
 
-    def _get_guard_next_position(self) -> tuple[int, int]:
-        if self._guard_direction == GuardDirection.UP:
-            next_pos = (self._guard_postion[0], self._guard_postion[1] - 1)
-        elif self._guard_direction == GuardDirection.DOWN:
-            next_pos = (self._guard_postion[0], self._guard_postion[1] + 1)
-        elif self._guard_direction == GuardDirection.LEFT:
-            next_pos = (self._guard_postion[0] - 1, self._guard_postion[1])
-        elif self._guard_direction == GuardDirection.RIGHT:
-            next_pos = (self._guard_postion[0] + 1, self._guard_postion[1])
+    def _loop_found(self) -> None:
+        self._loops_found.add(self._guard_postion)
+
+    def _turn_right(self, starting_direction: GuardDirection) -> GuardDirection:
+        if starting_direction == GuardDirection.UP:
+            return GuardDirection.RIGHT
+        elif starting_direction == GuardDirection.DOWN:
+            return GuardDirection.LEFT
+        elif starting_direction == GuardDirection.LEFT:
+            return GuardDirection.UP
+        elif starting_direction == GuardDirection.RIGHT:
+            return GuardDirection.DOWN
+        else:
+            raise ValueError("Invalid direction")
+
+    def _get_guard_next_position(
+        self, start: tuple[int, int], direction: GuardDirection
+    ) -> tuple[tuple[int, int], bool]:
+        if direction == GuardDirection.UP:
+            next_pos = (start[0], start[1] - 1)
+        elif direction == GuardDirection.DOWN:
+            next_pos = (start[0], start[1] + 1)
+        elif direction == GuardDirection.LEFT:
+            next_pos = (start[0] - 1, start[1])
+        elif direction == GuardDirection.RIGHT:
+            next_pos = (start[0] + 1, start[1])
         if self.map.get(next_pos) is None:
-            self.finished = True
-            return self._guard_postion
-        return next_pos
+            return self._guard_postion, True
+        return next_pos, False
 
     def get_number_of_possible_loops(self) -> int:
-        pass
+        return len(self._loops_found)
 
 
 if __name__ == "__main__":

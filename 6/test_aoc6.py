@@ -24,12 +24,12 @@ def test_count_walked_locations(data):
     assert sec.walked_locations == 41
 
 
-def test_secenaio_can_print_same_map(data):
+def test_scenario_can_print_same_map(data):
     sec = Scenario(data)
     assert sec._map_to_str() == data
 
 
-def test_walking_one_step_truns_guard_pos_in_X(data):
+def test_walking_one_step_turns_guard_pos_in_X(data):
     sec = Scenario(data)
     sec.walk(1)
     assert sec.map[(4, 6)] == "X"
@@ -37,4 +37,5 @@ def test_walking_one_step_truns_guard_pos_in_X(data):
 
 def test_count_possible_loop_spots(data):
     sec = Scenario(data)
-    sec.get_number_of_possible_loops() == 6
+    sec.walk()
+    assert sec.get_number_of_possible_loops() == 6
